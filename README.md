@@ -2,6 +2,9 @@
 
 Understanding the manual setup of a static website host is an essential first step before automating the entire process, especially if you're new to the cloud space. Just like how you learn basic math before using a calculator, getting hands-on experience by clicking through the cloud resources helps you comprehend how everything is connected. In this blog post, we'll explore the manual setup process (using ClickOps) and the automated approach with Terraform for creating a static website host.
 
+### Architectural Diagram
+![Architectural-diagram](./assets/stepone/architecture-manual.png)
+
 ## Resources
 To create a static website host, we'll work with the following AWS resources:
 
@@ -13,62 +16,167 @@ To create a static website host, we'll work with the following AWS resources:
 In the manual setup, we'll navigate through the AWS Management Console to create an S3 bucket, configure static website hosting, and set up a CloudFront distribution. This hands-on approach provides valuable insights into how these components are interconnected.
 
 ### Step 1
-Log in to your AWS Account and search for S3. Then click into S3
-!()[] 
+1. Log in to your AWS Account.  
+![aws-console](./assets/stepone/aws.console.png) 
+2. Search for S3, then click into S3
+![search-for-s3](./assets/stepone/s3-search.png)
+
+S3 is like a super secure digital storage space in the cloud, where you can store and retrieve your files (like documents, pictures, or videos) whenever you need them. It's always available, and you only pay for what you use.
+
+The image below shows some buckets, if your account is new you should not have any buckets listed
+![s3-bucket-list](./assets/stepone/s3-bucket-list.png)
+
+3. Go ahead and hit the orange button
+![create-bucket-button](./assets/stepone/create-bucket-button.png)
+
+4. Enter your bucket name
+When naming our buckets in AWS S3, it's important to know they have a global presence. This means that bucket names are like domain names, and the naming rules for domain names also apply to bucket names. Also, each bucket name must be unique worldwide, so you can name it as you wish, as long as it's not already taken.
+
+5. Choose your prefered region, I'm going to choose us-east-1
+
+6. Leave Object Ownership disabled
+
+![creating-bucket-one](./assets/stepone/creating-bucket-one.png)
+
+7. Scroll on down, Keep that checkmark that says **`Block all public access`**
+
+8. Keep bucket versioning **`Disabled`**
+![creating-bucket-two](./assets/stepone/creating-bucket-two.png)
+
+9. Scroll down, For **Encryption Type** Leave it on **`Server-side encryption with Amazon S3 managed keys (SSE-S3)`**
+
+10. Keep `bucket key` **enabled**
+![creating-bucket-three](./assets/stepone/creating-bucket-three.png)
+
+11. In Advanced settings Keep **`Object lock`** **`Disabled`**
+![creating-bucket-four](./assets/stepone/creating-bucket-four.png)
+
+12. Go ahead and create the bucket by clicking on the `create bucket` orange button
+![creating-bucket-last](./assets/stepone/create-bucket-final-button.png)
+
+13. If the bucket is created successfully the green message should appear
+![create-bucket-success](./assets/stepone/success-create-bucket.png)
+
+14. Check if the bucket is listed
+![updated-bucket-list](./assets/stepone/updated-bucket-list.png)
+
 
 ### Step 2
-S3 buckets is a form of cloud storage in some sense it's kind of like but it's not but it's kind of like uh Google Drive it's kind of like Dropbox it's kind of like iCloud storage I'm not a I'm not a huge uh digital files in the cloud and you don't have to worry about the size of the drive you just dump things in there and you just pay for what you consume what you store and your downloads uh
-like in traffic if that makes sense but the way it's different is that it's not as uh uh user friendly as something like Dropbox or Google Drive but it doesn't need to be because we're using it to integrate into our applications so it's great for developers it's great for cloud Engineers but for regular consumers you wouldn't use this as a Dropbox replacement um what you do is you probably build a layer on top of this and make your own Dropbox Google Drive is good you just drop things in and they go 
+We need to upload some html code to our S3 bucket.
 
-So you can see I already have some buckets here if this is a new account for you you should not have any buckets here
-What we want to do is we want to go ahead and create a new bucket so go ahead and hit the nice big orange button
-!()[]
+1. Copy the code below or use your own html code
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pizza Preparation List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        li {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pizza Preparation List</h1>
+    <ul>
+        <li>Prepare pizza dough</li>
+        <li>Add tomato sauce and cheese</li>
+        <li>Add your favorite toppings</li>
+        <li>Bake in the oven</li>
+        <li>Slice and serve</li>
+    </ul>
+</body>
+</html>
+
+```
+Save it in your system, You can open notepad or IDE and paste the html code, save it as index.html
+
+2. Go back to S3, click open the bucket name
+![object-tab](./assets/stepthree/object-tab.png)
+
+3. Click on the orange upload button
+![upload-button](./assets/stepthree/upload-button.png)
+
+You should see a page similar to this
+![upload-form](./assets/stepthree/upload-form.png)
+
+4. Click on `Add files`
+![add-files](./assets/stepthree/add-files-button.png)
+
+- Select your index.html file from where you saved it
+![index-file](./assets/stepthree/index-file.png)
+
+- You should see it here
+![index-in-ready-to-upload](./assets/stepthree/index-ready-to-upload.png)
+
+- Click `upload` button at the bottom of the page
+![upload-final](./assets/stepthree/upload-final-button.png)
+
+- Success page should appear if successful
+![success](./assets/stepthree/success-page.png)
+
 
 ### Step 3
-So the first thing we want to do is name our bucket when we name our buckets our bucket names are within the global namespace what does that mean names are like domain names because they literally will produce a subdomain on a domain name so whatever the restrictions that you have for a domain name for naming are going to for a subdomain are going to apply for the bucket name the other part is that it has to be unique so the idea again is that these Global namespaces are Global so the idea is that I can name this whatever I want you can't name it the same thing.
+**We will now set up static website hosting** by `enabling static website hosting`
 
-S3 is a global Service but why do you choose your AWS region because it's both so the namespace is global but the storage that they put it in is regional so you have so you know where you have to pick the region so that you know which hard drives effectively it gets written to but because it's leveraging the global DNS service it has to be globally from a regional perspective
+1. Click on the newly created bucket name
+![updated-bucket-list](./assets/stepone/updated-bucket-list.png)
 
-I'm going to choose us-east-1 you can choose your own prefered region and then we'll scroll on down we have we have some object ownership permissions uh We're Gonna Leave This disabled we do not need ACL this is for allowing people remote access using ACL controls into yours uh there hasn't been many use cases for me to use ACL in any project but I'm sure there is some case we have the block Public Access setting for this but this bucket this feature is really interesting because over the years AWS keeps trying to make sure people don't expose their buckets and they've made this feature they keep adding to it like I feel like there's gonna be like 10 check marks at one point being like are you sure you want to make it public we are going to keep our buckets um locked down we're never going to turn keep that check marked
+You should see a page similar to this
+![click-on-bucket-name](./assets/steptwo/click-on-bucket-name.png)
 
-we have bucket versioning generally it's a good idea to turn on bucket versioning we're not doing this on this blog, it's a good idea to do it but I also do find that it does increase the complexity when you are trying to get rid of things in your bucket but what bucket versioning does it allows you to add a every time you push to the same named key in your bucket it will create a new version on top of it that you'll access um kind of making like an onion if that makes sense but uh in order to delete I think you have to tear everything down it's quite the headaches so we're not going to do that here but this is really good if let's say somebody got into your account and they tried deleting things then they can only delete up to a certain point uh which is really good. so we've got bucket versioning disabled 
+2. Click on properties
+![properties-tab](./assets/steptwo/properties-tab.png)
 
-For encryption yeah it's encrypted by default so we have SE S3 was that always the case oh you can disable it I don't know why you'd want to no but I guess you could disable it if you'd like.
+3. Scroll to the bottom of the page, you should see **`static website hosting`** click on the **`edit`** button
+![edit-button](./assets/steptwo/edit-button.png)
 
-we'll go down here and we have some advanced settings uh there's object lock so I think that's really good yeah preventing object deletion so I was talking about this in versioning but I forgot to mention that I believe you have to have this turned on in order to have versioning in and so that was my thought is that versioning forces uh you to have to turn object lock on and that kind of helps there and it does say there down below object Lock Works only in version buckets and object lock automatically enables bucket versioning
+4. Click on **`enable`** on the next page. A form should display. 
+- On `Static website hosting` click **enable**
+- On `Hosting type` click **Host a static website**
+- On `Index document` type **index.html**
 
-We'll go ahead and create our bucket and we'll click that
-!()[]
+![enable-form](./assets/steptwo/enable-form.png)
+
+5. Scroll down and click on **Save changes**
+![save-changes](./assets/steptwo/save-changes.png)
+
+
+6. A success message should display at the top if successful. Also if we go all the way down to the bottom again it should have produced a link and that is the static website hosting link
+![url](./assets/steptwo/url-link.png) 
+
+ Please open it by clicking on it. You may encounter a 403 error. This error occurs because, by default, our bucket is not set to public access. 
+ 
+ If we navigate back to S3, then our bucket, the security feature can be adjusted by going to the 'Permissions' tab at the top.
+
+ ![block-access](./assets/steptwo/block-access.png) 
+ 
+ There, we are currently blocking Public Access, making the content not publicly accessible. Even if we enable Public Access, a bucket policy is required to make it accessible over the internet.
+
+ A 403 error signifies 'forbidden,' indicating that you don't have access or permission to access the content, which is perfectly fine. To address this, there are a couple of approaches we can take. One option is to make the content publicly accessible. However, I'd recommend creating a CloudFront distribution to serve our bucket. CloudFront, as a Content Delivery Network (CDN), caches your website's content on multiple servers worldwide. This means that when someone in, for example, India, is downloading your website hosted in England, it will serve the HTML file from a server that's geographically closer. This ensures faster and more efficient content delivery.
+
+
+ We prefer not to make it public; our intention is to maintain privacy. While it's possible to make content public, we want to ensure that everything is funneled through CloudFront. CloudFront offers additional security features, such as AWS firewall, which is a crucial part of our strategy.
+
+Just to clarify, this is the standard process followed by most professional organizations, particularly for production-level websites. Utilizing a CloudFront distribution or a similar solution is the standard approach for serving web pages efficiently and securely.
+
+ 
 
 ### Step 4
-Check if the bucket is listed
-!()[] 
-Click the bucket name
 
-### Step 5
-So the idea is that we want to set up static website hosting. We're going to enable static website hosting. click on properties and we'll go all the way that down to the ground and we'll find static website hosting and go ahead and hit edit, we'll go here and we'll have it enabled. Fill the form to include index.html and error.html we have some redirection rules so if you'd like we're not going to there are ways to uh redirect things to other places also notice up here we have two options host a static website and redirect requests for an object I find that it's very common that when you're setting up static website hosting for like a domain that you own you will set up an S3 bucket with the domain name and then you'll set one up with www and you'll use redirect to redirect one bucket to another one we are not doing that because we are not using custom domains we're just going to use the domain that we're going to get from cloudfront. So going down below here there is this thing but all you need to do is set up the index.html the error.html and we'll save those changes.
-!()[]
-
-### Step 6
-We need to upload some index.html code. Copy the code below or use your own html code
-```html
-```
-Save it in your system, You can open notepad or IDE paste the html code and save it as index.html.
-Go back to S3, click open the bucket name
+We need our cloudfront distribution and when we set this up we'll hopefully set up our origin access controls and our bucket policy.
 
 
-### Step 7
-With a successful upload the interesting thing here with the static website hosting, if we go to properties and we go all the way
-down to the bottom again it should have produced a link and that is the static website hosting link. Go ahead and open it up by clicking on it. We should get a 403. So the reason we got a 403 is that by default our bucket is not public so if we go back over to S3 this is a security feature over here if we go all the way to the top and we go to permissions, we are blocking Public Access so this is not publicly accessible, another thing is that even if we have this turned on we need a bucket policy to make it accessible to the internet. You're allowed to create a bucket policy now what permissions are allowed there? So a 403 is a forbidden it means you do not have access, you're not allowed to get to it and it's totally okay. So those are two things that we would need. In order to create that so there are a few ways we can do this we could make this publicly accessible but what I'd
-rather do is, I'd rather go create a cloudfront distribution, because that is the way that we should really serve our bucket. Cloudfront is a CDN and what it does is, it takes a copy of your website and caches it to a bunch of computers around the world so that when somebody, let's say in India is downloading my website in England it will serve up that HTML file to a computer that's nearby if that makes sense.
-
-So coming back over to our diagram we have our bucket, we need our cloudfront distribution and when we set this up we'll hopefully set up our origin access controls and our bucket policy.
-
-Well we don't want to make it public we want to keep it private because the thing is that we can make it public but we want everything to be forced through cloudfront as well because cloudfront can also attach additional Security Services like AWS firewall or whatever and that's just the the way it's going to work. 
-
-To be clear this is the process that most people do in professional organizations in production level websites using cloudfront distribution or aquamire or something like that is the process for serving out web pages
-
-### Step 8 
 so what we'll do is we'll go back over to AWS and we're going to search for cloudfront, click on it, and create a new distribution Thing we need to do is choose our origin domain, so if we drop this down we have a few options now sometimes they'll say
 point it to the S3 bucket and sometimes they'll say point it to the static website hosting URL.
 I want to choose the correct bucket so I'm going to just scroll on down and look for it and go and select your origin domain notice right away it says this S3 bucket has static web hosting enabled if you plan to use the distribution as a website we recommend using S3 website endpoint rather than the bucket endpoint and this is very conditional based on your use case, I wish this had a little bit better description in terms of what use case you would use one over the other but I think that we're supposed to actually keep it this way. So it looks like the origin here is it actually is the website bucket domain name so it actually is the domain name so we'll go back here I was totally wrong and up here I'm going to actually use the website endpoint because that's what it wants so make sure you press that button it's using the static website hosting it's not always the case if you're using origin access identities the old one it might want the S3 bucket or it will change the way you do it one three two in order that's probably a good order two is bad it's bad but it's good right anyway so let's scroll on down and we have our HTTP only so we're gonna leave that to Port 80. because that's the protocol it's going to send over to that we'll scroll on down here it says origin path enter the URL path to append to the origin domain name we're going to leave that blank because we don't need to change that it has entered the name of this origin we aren't going to change that we'll keep going down here advanced settings we'll leave those alone HTTP and HTTPS is fine but I probably would want to set to HTTPS only, we'll leave this alone here restrict your access if you restrict access the viewer must use cloudfront sign URLs or cookies to access the content no we're going to leave that alone we have caching policies so cash policy caching optimize we're going to leave that alone am I ever going to change any of these options here we'll leave these alone for now I believe we do set these uh later. I'm gonna go to additional settings these look fine this looks fine just leave this alone that's expensive this is fine we'll go over this twice I realize there's a lot of options
