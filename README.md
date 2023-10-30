@@ -254,11 +254,11 @@ If successful, a `Successfully edited bucket policy` banner should display
 
 1. Navigate to the CloudFront service.
 
-2. Click on the distribution ID or name to open its settings.
+2. Tick the box left to the distribution ID or name, then click **disable**
 
-3. Go to the "General" tab or "Distribution Settings" and choose "Disable" or "Edit" the distribution to set the "Enabled" option to "No". This will stop the distribution.
+![dist-disable](./assets/stepfour/dist-disable.png)
 
-4. After disabling, go to the "Actions" dropdown or the "Distribution Settings" and select "Delete Distribution".
+4. After disabling, click `delete`.
 
 #### Deleting the S3 Bucket:
 1. Go to the Amazon S3 service in the AWS Management Console.
