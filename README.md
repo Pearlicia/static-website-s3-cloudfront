@@ -258,7 +258,7 @@ If successful, a `Successfully edited bucket policy` banner should display
 
 ![dist-disable](./assets/stepfour/dist-disable.png)
 
-4. After disabling, click `delete`.
+4. Disabling will take some time. After disabling, Tick the box again and click `delete`.
 
 #### Deleting the S3 Bucket:
 1. Go to the Amazon S3 service in the AWS Management Console.
