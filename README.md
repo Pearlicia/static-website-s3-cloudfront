@@ -177,37 +177,108 @@ Just to clarify, this is the standard process followed by most professional orga
 We need our cloudfront distribution and when we set this up we'll hopefully set up our origin access controls and our bucket policy.
 
 
-so what we'll do is we'll go back over to AWS and we're going to search for cloudfront, click on it, and create a new distribution Thing we need to do is choose our origin domain, so if we drop this down we have a few options now sometimes they'll say
-point it to the S3 bucket and sometimes they'll say point it to the static website hosting URL.
-I want to choose the correct bucket so I'm going to just scroll on down and look for it and go and select your origin domain notice right away it says this S3 bucket has static web hosting enabled if you plan to use the distribution as a website we recommend using S3 website endpoint rather than the bucket endpoint and this is very conditional based on your use case, I wish this had a little bit better description in terms of what use case you would use one over the other but I think that we're supposed to actually keep it this way. So it looks like the origin here is it actually is the website bucket domain name so it actually is the domain name so we'll go back here I was totally wrong and up here I'm going to actually use the website endpoint because that's what it wants so make sure you press that button it's using the static website hosting it's not always the case if you're using origin access identities the old one it might want the S3 bucket or it will change the way you do it one three two in order that's probably a good order two is bad it's bad but it's good right anyway so let's scroll on down and we have our HTTP only so we're gonna leave that to Port 80. because that's the protocol it's going to send over to that we'll scroll on down here it says origin path enter the URL path to append to the origin domain name we're going to leave that blank because we don't need to change that it has entered the name of this origin we aren't going to change that we'll keep going down here advanced settings we'll leave those alone HTTP and HTTPS is fine but I probably would want to set to HTTPS only, we'll leave this alone here restrict your access if you restrict access the viewer must use cloudfront sign URLs or cookies to access the content no we're going to leave that alone we have caching policies so cash policy caching optimize we're going to leave that alone am I ever going to change any of these options here we'll leave these alone for now I believe we do set these uh later. I'm gonna go to additional settings these look fine this looks fine just leave this alone that's expensive this is fine we'll go over this twice I realize there's a lot of options
-we're not using C names because we're not using custom domain names we do that in the intermediate bootcamp um custom SSL no that'd probably be expensive or we'd use it from um one for our domain so we'll leave that alone okay we actually have something we can enter in default root object index.html
+1. In the AWS console search for cloudfront, click on it.
 
-we'll go over this twice here um yeah I think that's that's it so we'll go all the way back to the top okay so yeah all we did is we had that static website hosting here and then we literally scrolled on down down to the ground and we put an index.html in here now there was one thing that I wanted to know is I wanted to know if it was going to use the SS SSL certificate for cloudfront and I think actually in terraform we actually have to tell it explicitly but here we don't I just want to tell you that when you use terraform or when you use cloud formation or any IAC tool just understand that the apis are not always the same as the uis so sometimes the UI does like three four things for you that you don't see but when you do encoding you actually have to know more about how the apis work and that's why I always encourage people learning cloud to start looking at the API sooner so you have a better idea of what that is but I think it's important to look at both the UI and the apis and the clis and the code to understand and try to get a mapping of where things are different if that makes sense I know that's a big mess anyway one other thing I want to do is put a description in because I found out with cloudfront they just really don't help you understand what these things are for, so I'm just going to go here and say Tarahouse example CDN Please fill in a description. Go ahead and create that distribution, and by the way this takes a little bit of time to create and that's the perfect opportunity to go take a break
+![cloudfront-search](./assets/stepfour/cloudfront-search.png) 
+  
+2. Click on `Create a CloudFront distribution button`
+![cloudfront-button](./assets/stepfour/create-cf-button.png) 
 
-We gotta just say we don't want WAFF say no to this because this is an extra cost and we'll go ahead and create that distribution so I want folks to go back and click on their distribution and then scroll to the right you can see that note comes in handy here because the rest is really not helpful in terms of information so make sure that you can see your description and then scroll all the right and tell me if the status is enabled. So now the question is will this work if we click into a distribution we get a custom domain name so this is a different domain name from the one that the S3 bucket generated, and the idea is that we're hoping that when we use this domain name it's going to point to S3 bucket and work and it may not work and I have an idea if it doesn't but let's go and see if it works so I'm going to copy it bring it back up to the browser and we still have a 403 the reason we have a 403 is that we probably don't have a bucket policy so coming back to our diagram we're supposed to have an origin access controls and a bucket policy we need those two things in order for it to work and we didn't exactly configure one we didn't see those options when we were doing that but what we'll do is we will go back over to cloudfront
+3. Fill the form
+- On `Origin name` Select the bucket name you created
+**Ignore the box asking to `Use website endpoint`**
+- On `Name` Enter any name of your choice
+- On `Origin access` Select **Origin access control settings (recommended)**
 
-it was called control access settings let's go over here and try origin access and take a look oh look here control settings and identities so it's actually separate from it that's interesting I never knew that so now we know where it is and we'll go ahead and create a control setting So what I want you to do is go over to origin access in cloudfront right and click on this I'll get let's reset the counter we're going to do high with numbers here so we'll need to create a new uh control access I'm going to call this one Tara Town Tara house well hold on it says valid characters letters numbers multiple special characters and say Cara house example arrowhead's example well we don't need the description we'll go down below we say Do not sign requests sign requests we definitely want to sign requests we have an origin type of S3 so that sounds good I'm going to go ahead and create that so I've now created our origin Access Control. 
+![cloudfront-create-form](./assets/stepfour/create-dist-one.png) 
 
-So how do we actually attach that to our cloudfront distribution in our distribution it looks like when we create our distribution we can do that over here origin access I didn't even notice that when we were doing that so I guess that's an option I wonder if when we created it we could have created it all on the spot I bet we could have eh but wherever that was I I didn't notice it so what we'll do is we'll go back over to our distribution at the top and we'll click into this one and we'll go to behaviors and we'll edit our Behavior because that's where it looked like it was under okay can we change that after the fact I don't think we can
-let's go back to that where was that here create distribution in origin configuration in the origin drop down list you can optionally configure origin path to append the origin domain name I don't know if we can change that retroactively you should sign the request the reason you want the request signed is that is what's going to allow it to get access to the the private bucket because they're signed at least that's the way I understand it
+4. Since you select the **Origin access control settings (recommended)** we will have to `create control setting` Click `Create control setting`
+![control-setting](./assets/stepfour/create-control-settings.png) 
 
-I'm going to delete this distribution I know this takes forever but we're going to do it anyway we're going to delete it or sorry 
+Fill the form like the image below
+- On `Name` enter a unique name
+- On `Description` enter any description of your choice though it's optional
+- On `signing behavior` select `Sign requests (recommended)`
+- On `Origin type` select `S3`
 
-**disable it first** After disabling it then delete
+Then click `create`
+![control-setting-form](./assets/stepfour/control-setting-form.png) 
 
-I'm going to create a new distribution I'm gonna go and choose that uh that S3 address I'm going to ignore that option I'm going to go here instead I'm going to drop down this I'm going to go to here I'm going to scroll on down I'm going to say no to that I'm going to leave all this alone I'm going to set this to index.html and I'm going to say Tara house example two I'm going to create the distribution complete the distribution configuration by allowing read access to cloudfront so that's the last part of it was that even though we created the distribution with the access control policy we still have to have this bucket policy and that is this last part here if we go back to this one where did you go what we need to do is we need to copy it so I'm going to copy that policy and I'm going to go to my S3 bucket permissions right here to edit the bucket policy and paste. I'm going to go back over to cloudfront after it's deployed succesfully it worked. And the most impressive part of this is the fact that the S3 bucket is still
-blocking all access that's the cool thing
 
-I'm gonna just start cleaning this up so the way we clean this up you just saw that we we did that before how we deleted that so we'll go ahead and disable this one I think that we can't delete the bucket until well first we got to empty the bucket right the other part of it is that I don't know if it will let us delete the bucket if the the distributions points to it and we'll find that out here in just a moment so go ahead and empty the bucket
-okay and I'm going to go and see I can delete the bucket now I'm going to see if it'll let me delete this bucket oh it did oh so I didn't know that so you can delete interesting that's very interesting right unless this one was done because it is disabling maybe it knows it's in a disabled flag but um yeah I would have not thought you'd been able to do that but also it's it's pointing at maybe if it's pointing at the domain name um it doesn't resolve the domain name and so it's not checking the S3 bucket right so what if I know that we set it as S3 bucket but because we're using a cross origin origin access control and when we look in the terraform code it actually uses the domain name
+5. On `Enable Origin Shield` select `No`
+![control-setting-form-two](./assets/stepfour/create-dist-form-two.png) 
 
+6. Leave these options as default
+![control-setting-form-three](./assets/stepfour/create-dist-form-three.png) 
+![control-setting-form-four](./assets/stepfour/create-dist-form-four.png)
+
+7. Select `Do not enable security protections`
+![control-setting-form-five](./assets/stepfour/create-dist-form-five.png)
+
+8. On `Default root object - optional` enter **index.html** and on `Description - optional` enter any description of your choice. Leave the rest as defualt then click on **create distribution** button
+
+![control-setting-form-six](./assets/stepfour/create-dist-form-six.png)
+
+**It takes a bit of time to create**
+
+9. If successful, a banner displaying `Successfully created new distribution` should appear
+![success](./assets/stepfour/success.png)
+
+10. Click on `Copy policy`
+![copy-policy](./assets/stepfour/copy-policy.png)
+
+11. Go to S3 and click on your bucket name or just click on this link here
+![s3-link](./assets/stepfour/s3-link.png)
+
+12. Scroll down to `Bucket Policy` and click on `edit` button here
+![bucket-edit](./assets/stepfour/bucket-edit-button.png)
+
+13. Paste the bucket policy you copied
+![bucket-policy](./assets/stepfour/paste-policy.png)
+
+14. Click on `save changes`
+![save-changes](./assets/stepfour/save-changes.png)
+
+If successful, a `Successfully edited bucket policy` banner should display
+
+15. Go back to cloudfront distribution and click on your distribution name, we get a custom domain name so this is a different domain name from the one that the S3 bucket generated,
+
+![click-dist-name](./assets/stepfour/dist-name-click.png)
+
+16. Click the icon before the `distribution domain name` to copy the url and paste it in a browser and that's it, your site should appear
+![dist-domain-name](./assets/stepfour/dist-domain-name.png)
+
+
+### Step 5 Clean up
+#### Deleting the CloudFront Distribution:
+
+1. Navigate to the CloudFront service.
+
+2. Click on the distribution ID or name to open its settings.
+
+3. Go to the "General" tab or "Distribution Settings" and choose "Disable" or "Edit" the distribution to set the "Enabled" option to "No". This will stop the distribution.
+
+4. After disabling, go to the "Actions" dropdown or the "Distribution Settings" and select "Delete Distribution".
+
+#### Deleting the S3 Bucket:
+1. Go to the Amazon S3 service in the AWS Management Console.
+
+2. Choose the S3 bucket associated with the CloudFront distribution you just disabled.
+
+3. Before deleting the bucket, ensure it's empty. Delete all objects (files) inside the bucket. You can select each object and choose "Delete" or use a bulk delete method.
+
+4. Check and remove any bucket policies, access control lists (ACLs), or versioning that might prevent bucket deletion.
+
+5. Once the bucket is empty and there are no restrictions, select the bucket, and then from the "Actions" dropdown, choose "Delete bucket".
+
+### Important Note:
+- Deleting a bucket or distribution is irreversible and will permanently remove all stored objects or cached files. Ensure you have backups or copies of any data you might need before deletion.
+- The deletion process might take some time, especially for CloudFront distributions, due to the global caching network.
 
 
 
 ## Automated Setup with Terraform
 For the automated setup, we'll leverage Terraform, an infrastructure as code (IaC) tool. Terraform allows us to define our infrastructure in code, making it easy to manage, version, and replicate our static website hosting environment.
-
-[Include Terraform code and instructions for setting up the environment automatically.]
 
 By comparing the manual setup with ClickOps to the automated approach with Terraform, you'll gain a better understanding of the underlying infrastructure and see the benefits of automating repetitive tasks. This knowledge will be valuable as you delve deeper into cloud operations.
 
